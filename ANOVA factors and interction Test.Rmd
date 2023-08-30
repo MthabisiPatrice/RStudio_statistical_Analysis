@@ -1,0 +1,212 @@
+---
+title: "My Two-way ANOVA"
+output: 
+  html_document:
+    theme: cerulean
+    code_folding: hide
+---
+
+```{r message=FALSE, warning=FALSE}
+library(mosaic)
+library(DT)
+library(pander)
+library(car)
+library(tidyverse)
+
+# Record your data from your own mini experiment in Excel.
+# Save the data as a .csv file in the Data folder of the Statistics-Notebook.
+
+# Read in the data
+Reaction_Time <- read_csv("../../Data/Reaction_time.csv")
+```
+
+## The Hypothese below is there to compare the Two different levels.
+
+The following two way ANOVA test has been done two compare the results of my reaction time given two levels of variable factors one being reacting with the left hand with one eye shut and the other reaction  on the right hand with the second eye shut.
+
+### Factor 1 Eyes
+
+
+Factor 1: `Eyes` with levels $1$ and $2$.
+$$
+  H_0: \mu_{Left} = \mu_{Right}
+$$
+$$
+  H_a: \mu_{Right} \neq \mu_{Right}
+$$
+
+## Factor 2 Hands
+
+$$
+  H_0: \mu_{Left} = \mu_{Right}
+$$
+$$
+  H_a: \mu_{Left} \neq \mu_{Right} 
+$$
+
+
+
+
+
+$$
+  H_0: \text{The mean for each level of the Eye factor is the same for all levels of the Hand factor}
+$$
+$$
+  H_a: \text{The mean for each level of the Eye factor is not the same for all levels of the Hand factor.}
+$$
+
+
+A significance level of $\alpha = 0.05$ will be used for this study.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Instructions:
+
+Perform your own mini experiment using two factors that each have at least two levels. Analyze your data using a two-way ANOVA.
+
+Studying reaction time is recommended because the data is quickly collected.
+
+While you should use the warpbreaks example analyses as your guide on how to properly complete this analysis, you should also be creative in your final delivery of this analysis. If you copy the format and approach of the example analyses, be sure to give credit in your document to these example analyses. You could write something like, "This work is modeled after the [warpbreaks](https://byuistats.github.io/Statistics-Notebook/Analyses/ANOVA/Examples/warpbreaksTwoWayANOVA.html) analysis." Whatever you do, DO NOT use any of the written statements from the example analyses in your analysis unless you quote them directly and give credit. Using someone else's writing as your own without giving credit to the original author is plagiarism and is an Honor Code Violation. So do your own work. Plus, the more you try to write things in your own words, the more you will learn. Also, note that there aren't really any "rules" about exactly how your document should be organized. So be creative and organize your file in a way that makes sense to you, but still has all important elements.
+
+-->
+
+
+## This is an ANOVA Two way test to see if the two levels have any effect on my Reaction time.
+
+
+```{r warning=FALSE}
+patrice <- aov(ReactionTime ~ Eye + Hand + Eye:Hand, data = Reaction_Time)
+
+
+
+summary(patrice) |> pander()
+```
+
+
+
+
+
+## QQ PLot Test for Normality
+
+
+```{r warning=FALSE}
+par(mfrow = c(1,2))
+plot(patrice, which = 1:2)
+```
+
+
+## QQ Plot Explanation
+
+From the above QQ Plot we can see that the plots show that the data is not normal because there are some outliers on the normal qq on the right hand side. Point 1 and point 9 are very much out of range but this isnt a big problem for the anova test because the requirements arent strict on normality and sample size like the t test.
+
+
+
+
+## Graphical Summary.
+
+### Level 1 Eyes.
+
+```{r warning=FALSE}
+xyplot(ReactionTime ~ as.factor(Eye) , data= Reaction_Time, type=c("p","a"), main="Shut Either Eye", col='red', xlab="Eye", ylab="Reaction Time") 
+```
+
+
+### Numerical Summary of First Factor.
+
+```{r warning=FALSE}
+Reaction_Time %>%
+  group_by(Eye) %>%
+  summarise(`Mean Reaction_Time`=mean(ReactionTime)) %>%
+  pander(caption="Mean Reactiuon Time With One eye")
+```
+
+## Explanation
+
+The right eye closed has a better impact on the reaction time conopared to the left eye given the fact that the left eye has a more delayed reaction time.
+
+
+
+
+### Level 2 Hands
+
+```{r warning=FALSE}
+xyplot(ReactionTime ~ as.factor(Hand) , data= Reaction_Time, type=c("p","a"), main="Either hand Can be used", col='green', xlab="Hand", ylab="Reaction Time") 
+```
+
+
+
+### Numeric Summary of Second Factor.
+
+
+```{r warning=FALSE}
+Reaction_Time %>%
+  group_by(Hand) %>%
+  summarise(`Mean ReactionTime`=mean(ReactionTime)) %>%
+  pander(caption="Mean Reaction Time with either Hand")
+```
+
+## Explanation
+
+The mean reaction time of the right hand seems to be faster than that of the left hand from the numerical summary. A lower mean time tells us that the reaction time is quicker.
+
+
+
+
+## Interaction of the Two Factors.
+
+### Graphical plot of the two summaries.
+
+```{r warning=FALSE}
+xyplot(ReactionTime ~ as.factor(Eye), data=Reaction_Time, groups= as.factor(Hand), type=c("p","a"), main="Significance of the Interaction",xlab= "Eye" ,auto.key= list(corner=c(1,1)))
+
+
+
+       
+
+
+
+
+
+
+```
+
+
+## Numerical Summary Of Intractions.
+
+```{r warning=FALSE}
+Reaction_Time %>%
+  group_by(Hand,Eye) %>%
+  summarise(ave=mean(ReactionTime), .groups="drop") %>%
+ pander(caption="Mean Reaction Time with one Eye open and Either Left Hand or Right Hand")
+```
+
+
+## Numeric Summary Explanatin
+
+When we look at the numeric summary of the different levels and the interaction we see that the mean reaction time does differ with the different factors. The right hand with the right eye closed seems to be the lowest mean, meaning its faster reaction and the left eye close using the left hand seems to be the slowest with the highest average.
+
+
+
+
+
+
+## Conclusion
+
+From the above analysis we have come to the conclusion that reaction time is not affected by the two factors of which eye is shut and which hand is used be it left or right. Since all our F values are above the alpha of 0.05 we can then safely say that we have failed to reject the null hypothesis.
+
+

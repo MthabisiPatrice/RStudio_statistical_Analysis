@@ -1,0 +1,141 @@
+---
+title: "My Simple Logistic Regression"
+output: 
+  html_document:
+    theme: cerulean
+    code_folding: hide
+---
+
+<!-- Find some data of interest to you that can be analyzed with a logistic regression. Complete your Logistic Regression Analysis using this file. 
+
+Hint, run the command 
+
+> data() 
+
+in your Console to see available datasets in R that you could use for this Analysis. You are also welcome to collect data yourself, or find other available datasets online for this Analysis. Just be careful to not use anyone else's "analysis" for this Analysis. Also, no conducting surveys unless you have IRB approval to do so. -->
+
+```{r, include=FALSE}
+library(pander)
+library(car)
+library(DT)
+library(mosaic)
+library(tidyverse)
+library(ResourceSelection) 
+
+
+Roids <- read_csv("../../Data/Steroids.csv")
+```
+
+
+## Data Source
+The following dataset was taken from a survey i did on my instagram on a close friend list that reside all over the world. My Question was whether or not they used steroids and how much PBF they had. 
+
+
+## Background
+The fitness community has people that are natural and those that are on steroids. So there is a claim that steroids give an unfair advantage when it comes to fat loss, so people on steroids have an added advantage when it comes to losing weight and burning fat. So This test we want to see use the PBF (percent Body fat) to see if a person is on steroids or not. 
+
+
+## Hypothesis.
+My null Hypothesis states that steroid use does not impact PBF so the level of PBF cannot determing if a person is on steroids. 
+My Alternative hypothesis states that there is a relationship between the PBF and steroid use.
+
+
+$$
+  H_0: \beta_1 = 0 \\
+  H_a: \beta_1 \neq 0
+$$
+If beta 1 is Not equal to 0 then there is a relationship between PBF and steroid use.  
+
+
+
+
+We are using an alpha leve of 0.05
+$$
+\alpha = 0.05
+$$
+
+
+
+
+
+
+$$
+  P(Y_i = 1|x_i) = \frac{e^{-9.375+0.7204 x_i}}{1+e^{-9.375+0.7204 x_i}} = \pi_i
+$$
+Y = Steroid Use.
+X = Percent Body Fat.
+
+
+## Logistic Reaction Analysis
+
+
+```{r}
+Roids.glm <- glm(steroid_use== "Yes" ~ percent_body_fat,data = Roids,family = binomial)
+
+summary(Roids.glm) |> pander()
+
+```
+
+
+## Explanation
+The P value on the slope is less than 0.05 which is our alpha so we reject the null hypothesis.
+
+
+
+
+
+```{r}
+plot(steroid_use== "Yes" ~ percent_body_fat, data =Roids,  pch=16, main = "PBF Determine Steroid Use", xlab = "Percent Body Fat", ylab = "Probability Steroid use", col ="pink")
+curve(exp(-9.3749+0.7204*x)/(1+exp(-9.3749+0.7204*x)), add = TRUE)
+```
+
+## Explanation
+The above graph means that the people who use steroids ususally end up having higher PBF than those that are natural body builders.
+
+
+## Numerical Summary
+
+
+```{r message=FALSE, warning=FALSE}
+
+ #Steroid_User <- summary(Roids$percent_body_fat[Roids$steroid_use == "Yes"]) |> pander()
+
+Roids %>% 
+   group_by(steroid_use) %>% 
+   summarise(ave_pbf = mean(percent_body_fat), 
+             sdPBF = sd(percent_body_fat), 
+sampleSize = n(),min_pbf= min(percent_body_fat),max_pbf= max(percent_body_fat)) |>pander()
+
+
+
+
+
+
+```
+
+## Explanation
+The numerical summary shows us that the sample size for bothg groups is the same. The average PBF for a person whos natural is lower than that of a person who is not on steroids which i find really fascinating. The max body fat from the sample is higher for steroid users than the people who are natural.
+
+
+
+
+## Assumption Check 
+```{r message=FALSE, warning=FALSE}
+
+library(ResourceSelection)
+
+hoslem.test(Roids.glm$y, Roids.glm$fitted, g=6) %>% pander()
+# Note: doesn't give a p-value for g >= 7, default is g=10.
+# Larger g is usually better than smaller g.
+```
+
+## Explanation 
+The P value is higher than our alpha of 0.05 so we can see that the data is a good fit for the Logistic Regression model.  A higher p value is what we need for this test.
+
+
+## Conclusion 
+In conclusion we see that contrary to what i thought saying that the steroids give people an unfair advantage when it comes to weight loss but statistically, being natural is better.
+
+
+
+

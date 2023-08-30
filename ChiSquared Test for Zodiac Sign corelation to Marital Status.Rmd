@@ -1,0 +1,143 @@
+---
+title: "Chi Squared Test"
+output: 
+  html_document:
+    theme: cerulean
+    code_folding: hide
+---
+
+
+<!-- Directions
+
+Come up with a chi squared test analysis of your own creation. 
+
+* Write the Background and clearly state your question. Then collect data and perform the chi-squared test analysis in order to answer your question. Use the proper order of first, ask the question, then second, figure out the answer.
+
+* You can use data from 
+    - An R data set
+    - the internet (like weather data, Facebook data, or sports data) 
+    - your own experiment 
+    - your own observational study
+* However,     
+    - Do not violate the "Human Subjects Rules" of the university: http://www.byui.edu/executive-strategy-and-planning/institutional-research/research-and-assessments/research-and-surveys
+
+* You need a sample size large enough to meet the requirements of the chi squared test. Unfortunately, the sample size is completely dependent on the situation you select. A good rule of thumb is 10 observations per "combination-group" in your data.
+
+-->
+
+
+```{r message=FALSE, warning=FALSE}
+library(haven)
+library(tidyverse)
+library(mosaic)
+library(pander)
+
+gss2021 <- read_sas("../../Data/gss2021.sas7bdat",NULL)
+
+```
+
+## Background
+In a world were people want to believe in something, there are groups of people that actually believe in Zodiac Signs. I respect their beliefs but i want to see if a zodiac sign has impact on a persons marital status. Could Libras really br crazy and Capricorns sneaky? Lets find out! 
+
+
+
+## Question And Hypothesis
+For the Null Hypothesis its Marital status and star sign have no relation, but for the Alternative hypothesis i say that Star sign and Marital Status are related. So peoples star signs  have a factor on their marital status.
+
+
+
+
+
+$$
+  H_{0}:\ \text{Zodiac sign and Marital Status aren't related.}
+$$
+$$
+  H_{a}:\ \text{Zodiac Sign and Marital Status are related.}
+$$
+
+Filtering data
+
+```{r message=FALSE, warning=FALSE}
+gss <- gss2021 |> select(c("ZODIAC","MARITAL"))|> filter(!is.na("ZODIAC" )& !is.na("MARITAl"))
+
+
+gss <- gss |>
+  mutate(
+    Sign = case_when(
+      ZODIAC == 1 ~ "Aries",
+      ZODIAC == 2 ~ "Taurus",
+      ZODIAC == 3 ~ "Gemini",
+      ZODIAC == 4 ~ "Cancer",
+      ZODIAC == 5 ~ "Leo",
+      ZODIAC == 6 ~ "Virgo",
+      ZODIAC == 7 ~ "Libra",
+      ZODIAC == 8 ~ "Scorpio",
+      ZODIAC == 9 ~ "Sagittarius",
+      ZODIAC == 10 ~ "Capricorn",
+      ZODIAC == 11 ~ "Aquarius",
+      ZODIAC == 12 ~ "Pisces"))
+
+
+
+gss <- gss |>
+  mutate(
+    Marital_stat = case_when(
+      MARITAL == 1 ~ "Married",
+       MARITAL == 2 ~ "Widowed",
+       MARITAL == 3 ~ "Divorced",
+       MARITAL == 4 ~ "Separated",
+       MARITAL == 5 ~ "Never married"))
+
+
+```
+
+
+## Data Analysis and Tests
+
+## Data Table
+```{r message=FALSE, warning=FALSE}
+my_zodiac <- table(gss$Sign,gss$Marital_stat)
+my_zodiac |> pander()
+```
+
+## Plot 
+
+
+```{r message=FALSE, warning=FALSE}
+par(mar=c(10,5,4,1))
+
+barplot(t(my_zodiac),beside = TRUE, legend.text = TRUE, main = "Zodiac Sign and Marital Status Status for People",las=2, col = c ("red","green","yellow","blue","purple"), xlab = "Star Signs", ylab = "Number Of People In the Group")
+```
+
+## Explanation of Graphical summary.
+Seems like Capricorns have the highest marriages from all the other Zodiac sign. Then Scorpios have the most divorces. 
+
+
+
+## Zodiac Sign Chi squared Test 
+```{r message=FALSE, warning=FALSE}
+chi_zodiac <- chisq.test(my_zodiac)
+chi_zodiac |> pander()
+
+
+
+
+```
+
+## Explanation 
+The P-value is higher than 0.05 so this means that there is no link between  a persons Zodiac Sign and their marital Status. 
+
+
+## Fit test 
+
+```{r message=FALSE, warning=FALSE}
+chi_zodiac$expected |> pander()
+```
+
+## Explanation 
+The  test for fit shows that non of the expected are less than 5 so that shows that the dataset fits properly. on average the expected are bigger than 5.
+
+
+## Coclusion
+Conclusively we can say that a persons relationship status has no link or corelation with their Zodiac sign. So contrary to what most people want to believe in the modern day world, their relationship status is impacted by some good and bad behaviors or rather some unforseen events that they have no control over. 
+
